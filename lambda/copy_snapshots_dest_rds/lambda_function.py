@@ -21,6 +21,7 @@ import re
 from snapshots_tool_utils import *
 
 # Initialize everything
+COPY_SNAPSHOT_TYPE = os.getenv('SNAPSHOT_TYPE')
 LOGLEVEL = os.getenv('LOG_LEVEL', 'ERROR').strip()
 PATTERN = os.getenv('SNAPSHOT_PATTERN', 'ALL_SNAPSHOTS')
 DESTINATION_REGION = os.getenv('DEST_REGION').strip()
@@ -45,12 +46,17 @@ def lambda_handler(event, context):
     shared_snapshots = get_shared_snapshots(PATTERN, response)
     own_snapshots = get_own_snapshots_dest(PATTERN, response)
 
+    if COPY_SNAPSHOT_TYPE == 'MANUAL':
+        snapshots = get_own_snapshots_source(PATTERN, response)
+    else:
+        snapshots = shared_snapshots
+
     # Get list of snapshots in DEST_REGION
     client_dest = boto3.client('rds', region_name=DESTINATION_REGION)
     response_dest = paginate_api_call(client_dest, 'describe_db_snapshots', 'DBSnapshots')
     own_dest_snapshots = get_own_snapshots_dest(PATTERN, response_dest)
 
-    for shared_identifier, shared_attributes in shared_snapshots.items():
+    for shared_identifier, shared_attributes in snapshots.items():
 
         if shared_identifier not in own_snapshots.keys() and shared_identifier not in own_dest_snapshots.keys():
         # Check date

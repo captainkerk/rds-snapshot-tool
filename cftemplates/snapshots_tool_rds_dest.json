@@ -45,6 +45,12 @@
 			"Default": "TRUE",
 			"Description": "Set to TRUE to enable deletion of snapshot based on RetentionDays. Set to FALSE to disable",
 			"AllowedValues": ["TRUE", "FALSE"]
+		},
+		"CopySnapshotType": {
+			"Type": "String",
+			"Default": "SHARED",
+			"Description": "Set to shared if the snapshots are originating from a different account. Set to manual if the snapshot is coming from the same account",
+			"AllowedValues": ["SHARED", "MANUAL"]
 		}
 	},
 	"Conditions": {
@@ -291,6 +297,9 @@
 				"Description": "This functions copies snapshots for RDS Instances shared with this account. It checks for existing snapshots following the pattern specified in the environment variables with the following format: <dbInstanceIdentifier-identifier>-YYYY-MM-DD-HH-MM",
 				"Environment": {
 					"Variables": {
+						"SNAPSHOT_TYPE": {
+							"Ref": "CopySnapshotType"
+						},
 						"SNAPSHOT_PATTERN": {
 							"Ref": "SnapshotPattern"
 						},
